@@ -1,9 +1,3 @@
----
-title: An R Markdown document converted from "C:/Users/TJ/Documents/Explore and Summarize
-  Data - Loan Data/Explore and Summarize Data - Loan Data.ipynb"
-output: html_document
----
-
 # Explore and Summarize Data - Loan Data
 
 ## Introduction
