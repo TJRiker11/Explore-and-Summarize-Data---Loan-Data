@@ -537,20 +537,3 @@ chart3
 
 > Finally, it is worth mentioning that most of this analysis was through Barcharts, Histograms, Scatterplots, and Jitterplots. There are many different types of charting and plotting, and creating many different charts on the same information could lead to different views on the same data. This analysis mainly focused on one chart per dataset, which could potentially skew some information, for example, some outliers had to be cut off to fit on certain types of charts. This is why creating many viewpoints for the same information would not be redundant, but would instead be helpful in finding new ways to look at the same data, and potentially find new solutions and information about the data.
 
-```{r}
-# Generate Paths
-spt_file_root = 'C:\Users\TJ\Documents\Explore and Summarize Data - Loan Data'
-spt_file_name = 'Explore and Summarize Data - Loan Data'
-spt_file_full_ipynb = paste0(spt_file_root, spt_file_name, '.ipynb')
-spt_file_full_rmd = paste0(spt_file_root, spt_file_name, '.rmd')
-
-# Convert from IPYNB to RMD
-file_nb_rmd = rmarkdown:::convert_ipynb(spt_file_full_ipynb)
-st_nb_rmd = xfun::file_string(file_nb_rmd)
-
-# Save RMD
-fileConn <- file(spt_file_full_rmd)
-writeLines(st_nb_rmd, fileConn)
-close(fileConn)
-```
-
