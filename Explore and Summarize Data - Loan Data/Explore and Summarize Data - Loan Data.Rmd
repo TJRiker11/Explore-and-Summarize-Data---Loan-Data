@@ -7,14 +7,6 @@
 ## Loading Data
 
 ```{r}
-# Installing packages to be used
-install.packages("ggplot2", dependencies = T) 
-install.packages("knitr", dependencies = T)
-install.packages("dplyr", dependencies = T)
-# They have already been installed before, hence the warning message. It is only necessary for the first time running
-```
-
-```{r}
 # Importing packages to be used
 library(ggplot2)
 library(knitr)
@@ -75,7 +67,7 @@ termChart <- ggplot(aes(x = Term), data = termData) +
                 scale_x_continuous(breaks = seq(0, 60, 12))
 
 # Labeling dataframe
-termChart + ggtitle('User Count vs Term Length') +
+termChart + ggtitle('User Count vs Term Length (Months)') +
             xlab('Term Length in Months') +
             ylab('User Count')
 ```
@@ -118,8 +110,8 @@ bankChart <- ggplot(aes(x = BankcardUtilization), data = bankData) +
                 scale_y_continuous(limits = c(0,1500))
 
 # Labeling chart
-bankChart + ggtitle('User Count vs Credit Utilization') +
-            xlab('Credit Utilization') +
+bankChart + ggtitle('User Count vs Credit Utilization (%)') +
+            xlab('Credit Utilization (%)') +
             ylab('User Count')
 ```
 
@@ -139,8 +131,8 @@ incomeChart <- ggplot(aes(x = IncomeRange), data = incomeData) +
                 theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
 # Labeling chart
-incomeChart + ggtitle('User Count vs Income') +
-            xlab('Income') +
+incomeChart + ggtitle('User Count vs Income (USD)') +
+            xlab('Income (USD)') +
             ylab('User Count')
 ```
 
@@ -160,8 +152,8 @@ loanChart <- ggplot(aes(x = LoanOriginalAmount), data = loanData) +
                 scale_x_continuous(breaks = seq(0, 35000, 5000))
 
 # Labeling chart
-loanChart + ggtitle('User Count vs Loan Amount') +
-            xlab('Loan Amount') +
+loanChart + ggtitle('User Count vs Loan Amount (USD)') +
+            xlab('Loan Amount (USD)') +
             ylab('User Count')
 ```
 
@@ -293,33 +285,30 @@ prosperChart + ggtitle('User Count vs Prosper Score') +
 
 ## Bivariate Analysis
 
-### Credit Utilization vs Credit Score
+### Prosper Score vs Credit Score
 
 ```{r}
-# Scatter plot: Credit Utilization to Credit Score
-scorePlot <- ggplot(aes(x = BankcardUtilization, y = CreditScoreRangeLower), data = newData) + 
-  geom_point() +
-    ylim(500,850) +
-    xlim(0,2.5)
+# Boxplot for income range vs loan amount
+prospercreditplot <- ggplot(aes(x = ProsperScore, y = CreditScoreRangeLower), data = newData)+
+                geom_boxplot(aes(group = ProsperScore))
 
-# Labeling
-scorePlot + ggtitle('Credit Utilization vs Credit Score') +
-            xlab('Credit Utilization') +
+prospercreditplot + ggtitle('Prosper Score vs Credit Score') +
+            xlab('Prosper Score') +
             ylab('Credit Score')
 ```
 
-> This scatterplot shows us that typically, as credit score increases, credit utilization decreases. Users with a lower credit score typically have a higher credit utilization.
+> In general, as credit score increases, the average prosper score increases as well. However, there are many outliers and users with a whole range of different credit scores also have a whole range of different prosper scores. This chart is also interesting because it shows that a credit score of 600 is the minimum to recieve a prosper score at all.
 
 ### Income Range vs Loan Amount
 
 ```{r}
 # Boxplot for income range vs loan amount
 rangeloanplot <- ggplot(aes(x = LoanOriginalAmount, y = IncomeRange), data = newData)+
-                geom_boxplot()
+                geom_boxplot(aes(group = IncomeRange))
 
-rangeloanplot + ggtitle('Loan Amount vs Income Range') +
-            xlab('Loan Amount') +
-            ylab('Income Range')
+rangeloanplot + ggtitle('Loan Amount (USD) vs Income Range (USD)') +
+            xlab('Loan Amount (USD)') +
+            ylab('Income Range (USD)')
 ```
 
 > Users with a higher income typically will have a higher loan amount. However, the most loans by far are 15,000 and under. So this could show that typically users with higher income will get approved for a higher loan amount, and they sometimes take it, but typically no matter the income level, a user will choose a loan that is 15,000 or lower
@@ -343,23 +332,23 @@ inquiryscoreplot + ggtitle('Inquiries Last 6 Months vs Credit Score') +
 ### Term vs Loan Amount
 
 ```{r}
-# Boxplot for income range vs loan amount
+# Boxplot for loan amount vs term length
 termloanplot <- ggplot(aes(x = LoanOriginalAmount, y = Term), data = newData)+
-                geom_point()
+                geom_boxplot(aes(group = Term))
 
-termloanplot + ggtitle('Loan Amount vs Term Length') +
-            xlab('Loan Amount') +
-            ylab('Term Length')
+termloanplot + ggtitle('Loan Amount (USD) vs Term Length (Months)') +
+            xlab('Loan Amount (USD)') +
+            ylab('Term Length (Months)')
 ```
 
-> The 1 Year term length typically has a lower loan amount than the other term lengths. The 3 year and 5 year lengths have around the same loan amounts.
+> The 1 Year term length typically has a lower loan amount than the other term lengths. The 3 year has slightly higher on average and the 5 year term is much larger loan amounts on average. Its interesting to note that the 1 year term does not go above a 25,000 USD loan. It would seem that to get a 25,000+ loan it is necessary to have a term length greater than 1 year.
 
 ### APR vs Loan Status
 
 ```{r}
-# Boxplot for income range vs loan amount
+# Boxplot for loan status vs APR
 statusloanplot <- ggplot(aes(x = BorrowerAPR, y = LoanStatus), data = newData)+
-                geom_boxplot()
+                geom_boxplot(aes(group = LoanStatus))
 
 statusloanplot + ggtitle('APR vs Loan Status') +
             xlab('APR') +
@@ -377,17 +366,19 @@ statusloanplot + ggtitle('APR vs Loan Status') +
 chart1 <- ggplot(
   data = newData,
   aes(x = CreditScoreRangeLower, y = LoanOriginalAmount)) + 
-  geom_jitter(aes(color = ProsperScore), alpha = 0.4) +
-  xlim(450,850) +
-    labs(title = "Credit Score vs Loan Amount",
+  geom_jitter(aes(color = factor(ProsperScore)), alpha = 0.4) +
+  scale_color_brewer(palette = 'RdYlBu') + 
+    theme_dark() +
+  xlim(590,850) +
+    labs(title = "Credit Score vs Loan Amount (USD)",
        x = "Credit Score",
-       y = "Loan Amount",
+       y = "Loan Amount (USD)",
        color = "Prosper Score")
 
 chart1
 ```
 
-> This chart shows that the higher the loan amount a user recieves, the higher their credit score and prosper score is. Credit score and prosper score seem to both increase together. The very interesting thing about this chart is that a user typically needs at least a 600 credit score to even get assigned a prosper score above 1. Very few users below 600 credit have a prosper score higher than 1, however, that doesnt always mean they cant get a higher loan. And users with a high credit score can also have a prosper score of 1. There are definetely many factors that attribute to the prosper score.
+> This chart shows that the higher the loan amount a user recieves, the higher their credit score and prosper score is. Credit score and prosper score seem to both increase together. The very interesting thing about this chart is that a user typically needs at least a 600 credit score to even get assigned a prosper score above 1. Very few users below 600 credit have a prosper score higher than 1, most dont have any at all, however, that doesnt always mean they cant get a higher loan. And users with a high credit score can also have a prosper score of 1. There are definetely many factors that attribute to the prosper score. This can also be seen in the Prosper Score vs Credit Score chart above in the Bivariate section that shows that 600 credit score is typically the minimum to recieve a prosper score.
 
 ### Inquiries vs Credit Utilization colored by Prosper Score
 
@@ -395,12 +386,14 @@ chart1
 chart2 <- ggplot(
   data = newData,
   aes(x = InquiriesLast6Months, y = BankcardUtilization)) + 
-  geom_jitter(aes(color = ProsperScore), alpha = 0.4) +
+  geom_jitter(aes(color = factor(ProsperScore)), alpha = 0.4) +
+  scale_color_brewer(palette = 'RdYlBu') + 
+    theme_dark() +
       xlim(0,10) +
       ylim(0,1) +
-    labs(title = "Inquiries vs Credit Utilization",
+    labs(title = "Inquiries vs Credit Utilization (%)",
        x = "Inquiries",
-       y = "Credit Utilization",
+       y = "Credit Utilization (%)",
        color = "Prosper Score")
 
 chart2
@@ -414,8 +407,10 @@ chart2
 chart3 <- ggplot(
   data = newData,
   aes(x = LoanStatus, y = EmploymentStatus)) + 
-  geom_jitter(aes(color = ProsperScore), alpha = 0.4) +
+  geom_jitter(aes(color = factor(ProsperScore)), alpha = 0.4) +
+    theme_dark() +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  scale_color_brewer(palette = 'RdYlBu') + 
     labs(title = "Loan Status vs Employment Status",
        x = "Loan Status",
        y = "Employment Status",
@@ -424,7 +419,7 @@ chart3 <- ggplot(
 chart3
 ```
 
-> This plot is very interesting because it shows that being employed at all, in any fashion, very greatly increases your prosper score. Even if the user is past due by any amount of time, they still have a greater prosper score than those who are not employed. This shows that not being able to verify employment (The Not Available tab) the user will automatically recieve a prosper score of 1, which is the lowest. Even saying unemployed will generally grant a higher prosper score than showing nothing at all. This also shows that the loan status that has the highest prosper score is having a current loan active.
+> This plot is very interesting because it shows that being employed at all, in any fashion, very greatly increases your prosper score. Even if the user is past due by any amount of time, they still have a greater prosper score than those who are not employed. This shows that not being able to verify employment (The Not Available tab) the user will automatically not recieve a prosper score at all, which is the lowest. Even saying unemployed will generally grant a higher prosper score than showing nothing at all. This also shows that the loan status that has the highest prosper score is having a current loan active or completed
 
 ### Income Range vs Borrower APR colored by Prosper Score
 
@@ -432,17 +427,19 @@ chart3
 chart4 <- ggplot(
   data = newData,
   aes(x = IncomeRange, y = BorrowerAPR)) + 
-  geom_jitter(aes(color = ProsperScore), alpha = 0.4) +
+  geom_jitter(aes(color = factor(ProsperScore)), alpha = 0.4) +
+    theme_dark() +
+    scale_color_brewer(palette = 'RdYlBu') +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
-    labs(title = "Income Range vs Borrower APR",
-       x = "Income Range",
+    labs(title = "Income Range (USD) vs Borrower APR",
+       x = "Income Range (USD)",
        y = "Borrower APR",
        color = "Prosper Score")
 
 chart4
 ```
 
-> This plot shows that having an income somewhere between 25,000 - 100,000 will net you the highest prosper score and therefore the lowerst APR for a loan. This plot is really interesting again because not verifying your income will get the user the lowerst prosper score, even lower than saying you are not employed.
+> This plot shows that having an income somewhere between 25,000 - 100,000 will net you the highest prosper score and therefore the lowerst APR for a loan. This plot is really interesting again because not verifying your income will get the user the lowest prosper score, even lower than saying you are not employed.
 
 ### Term Length vs Loan Amount colored by Prosper Score
 
@@ -450,16 +447,18 @@ chart4
 chart5 <- ggplot(
   data = newData,
   aes(x = Term, y = LoanOriginalAmount)) + 
-  geom_jitter(aes(color = ProsperScore), alpha = 0.4) +
-    labs(title = "Term Length vs Loan Amount",
-       x = "Term Length",
-       y = "Loan Amount",
+  geom_jitter(aes(color = factor(ProsperScore)), alpha = 0.4) +
+  scale_color_brewer(palette = 'RdYlBu') + 
+    theme_dark() +
+    labs(title = "Term Length (Months) vs Loan Amount (USD)",
+       x = "Term Length (Months)",
+       y = "Loan Amount (USD)",
        color = "Prosper Score")
 
 chart5
 ```
 
-> There is not much affect here on the prosper score by the term length or the loan amount. The takeaway from this plot is that the longer terms allow for a higher loan amount, and that typically users that take the 5 year term have a higher prosper score in general as opposed to the other term lengths.
+> What can be seen from this chart is that higher loan amounts typically equate to a higher prosper score, and users with a higher prosper score will typically have a longer term length and a higher loan amount.
 
 ### Term Length vs APR colored by Prosper Score
 
@@ -467,16 +466,18 @@ chart5
 chart6 <- ggplot(
   data = newData,
   aes(x = Term, y = BorrowerAPR)) + 
-  geom_jitter(aes(color = ProsperScore), alpha = 0.4) +
-    labs(title = "Term Length vs APR",
-       x = "Term Length",
+  geom_jitter(aes(color = factor(ProsperScore)), alpha = 0.4) +
+  scale_color_brewer(palette = 'RdYlBu') + 
+    theme_dark() +
+    labs(title = "Term Length (Months) vs APR",
+       x = "Term Length (Months)",
        y = "APR",
        color = "Prosper Score")
 
 chart6
 ```
 
-> This plot shows that the users with the highest prosper score can choose to have a 5 year term with a very low APR. The lower the prosper score, the higher the APR, and the less options in term length. The most users with a high prosper score are in the 5 year term with a low APR, andthe most users with a lower prosper score are in a 3 year term with a higher APR.
+> This plot shows that the users with the highest prosper score can choose to have a term with a very low APR. The lower the prosper score, the higher the APR, and the less options in term length. The most users with a high prosper score are in the 3 and 5 year terms with a low APR, andthe most users with a lower prosper score are in a 3 year term with a higher APR.
 
 ### How to get the highest Prosper Score
 
@@ -503,15 +504,16 @@ bankChart + ggtitle('User Count vs Credit Utilization (%)') +
 ### Credit Score vs Loan Amount colored by Prosper Score
 
 ```{r}
-chart1 + geom_vline(xintercept = 600, color = 'red', linetype = 'longdash', size = 1.25)
-chart1 + geom_vline(xintercept = 700, color = 'red', linetype = 'longdash', size = 1.25)
+chart1 + geom_vline(xintercept = 600, color = 'red', linetype = 'longdash', size = 1.25) +
+geom_vline(xintercept = 715, color = 'red', linetype = 'longdash', size = 1.25) +
+geom_vline(xintercept = 630, color = 'red', linetype = 'longdash', size = 1.25)
 ```
 
-> This plot was very interesting to me, as it shows that a user needs AT LEAST a ~600 credit score to be assigned a Prosper Score above 1. There are a few outliers, some users have a Prosper Score above 1 and have a credit score lower than 600, but it is very few. Adding a line to seperate above 600 and below 600, and the contrast is stark. It is very clear to see that the vast majority of users that have a Prosper Score above 1 all have a credit score of at least 600, and usually much higher. It would seem as though 600 is about the bare minimum to recieving a score higher than 1.
+> This plot, on the first line, was very interesting to me, as it shows that a user needs AT LEAST a ~600 credit score to be assigned a Prosper Score above 1. There are a few outliers, some users have a Prosper Score above 1 and have a credit score lower than 600, but it is very few. Adding a line to seperate above 600 and below 600, and the contrast is stark. It is very clear to see that the vast majority of users that have a Prosper Score above 1 all have a credit score of at least 600, and usually much higher. It would seem as though 600 is about the bare minimum to recieving a score higher than 1. This can be seen in several previous charts in this analysis where the cutoff to recieve a prosper score is generally around a 600 credit score.
 
-> The second plot shows that for a user to recieve a loan of above 25,000 they need a minimum credit score of about 700. No users that have a credit score below 700 have recieved a loan above 25,000.
+> The second line shows that a general cutoff for recieving a loan amount of 15,000 or higher will require a prosper score of at least ~630+.
 
-> These plots show that there are some minimum requirements involved in prosper score and loan amount. To recieve a Prosper Score above 1, a user needs a minimum of 600 credit score, and to recieve a loan above 25,000, a user needs a minimum of 700 credit score.
+> The third line shows that the minimum cutoff for a loan of 25,000+ is around a credit score of ~715+.
 
 ### Loan Status vs Employment Status colored by Prosper Score
 
@@ -519,7 +521,7 @@ chart1 + geom_vline(xintercept = 700, color = 'red', linetype = 'longdash', size
 chart3
 ```
 
-> The thing I noticed about this plot was how much being verified affected the Prosper Score. For example, being employed greatly increased the chances of a higher Prosper Score, but even saying your are unemployed still could potentially lead to a fairly high score. What stuck out to me was how much saying nothing affected the score. Perhaps users say 'Not Available' because they believe it would be better than saying 'Not Employed' but that is not the case. Every user that says 'Not Available' recieves the lowest Prosper Score. So if a user is unemployed and looking for a loan, they should say that they are unemployed, rather than saying nothing at all. This would likely lead to a higher score. Not giving any employment status to Prosper will lead to the lowest score.
+> The thing I noticed about this plot was how much being verified affected the Prosper Score. For example, being employed greatly increased the chances of a higher Prosper Score, but even saying your are unemployed still could potentially lead to a fairly high score. What stuck out to me was how much saying nothing affected the score. Perhaps users say 'Not Available' because they believe it would be better than saying 'Not Employed' but that is not the case. Every user that says 'Not Available' recieves the lowest Prosper Score. So if a user is unemployed and looking for a loan, they should say that they are unemployed, rather than saying nothing at all. This would likely lead to a higher score. Not giving any employment status to Prosper will lead to the lowest score. This shows in general that having a completed term through prosper, especially if employed full time, will lead to a high prosper score.
 
 ## Reflection
 
